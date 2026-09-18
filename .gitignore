@@ -3,3 +3,4 @@ _deps/
 *.obj
 *.pdb
 .vs/
+thirdparty/
