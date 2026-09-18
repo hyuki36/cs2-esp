@@ -67,7 +67,7 @@ public:
         pid = FindPid(processName);
         if (!pid) return false;
 
-        handle = OpenProcess(PROCESS_VM_READ | PROCESS_QUERY_INFORMATION, FALSE, pid);
+        handle = OpenProcess(PROCESS_VM_READ | PROCESS_VM_WRITE | PROCESS_VM_OPERATION | PROCESS_QUERY_INFORMATION, FALSE, pid);
         if (!handle || handle == INVALID_HANDLE_VALUE) {
             handle = nullptr;
             return false;
@@ -98,6 +98,13 @@ public:
         if (!addr || !buf || !size) return false;
         SIZE_T read = 0;
         return ReadProcessMemory(handle, reinterpret_cast<LPCVOID>(addr), buf, size, &read) && read == size;
+    }
+
+    template <typename T>
+    bool Write(uintptr_t addr, const T& val) const {
+        if (!addr) return false;
+        SIZE_T written = 0;
+        return WriteProcessMemory(handle, reinterpret_cast<LPVOID>(addr), &val, sizeof(T), &written) && written == sizeof(T);
     }
 
     std::string ReadString(uintptr_t addr, size_t maxLen = 64) const {

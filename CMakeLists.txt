@@ -19,6 +19,7 @@ FetchContent_MakeAvailable(imgui)
 add_executable(cs2_external
   src/main.cpp
   src/cs2.cpp
+  src/features.cpp
   src/overlay.cpp
   ${imgui_SOURCE_DIR}/imgui.cpp
   ${imgui_SOURCE_DIR}/imgui_draw.cpp
@@ -47,6 +48,9 @@ target_compile_definitions(cs2_external PRIVATE
 
 if(MSVC)
   target_compile_options(cs2_external PRIVATE /W3 /EHsc /MP)
+else()
+  # MinGW: static link so the exe runs anywhere
+  target_link_options(cs2_external PRIVATE -static -static-libgcc -static-libstdc++)
 endif()
 
 set_target_properties(cs2_external PROPERTIES OUTPUT_NAME cs2esp)

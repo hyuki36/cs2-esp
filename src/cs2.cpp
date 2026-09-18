@@ -161,6 +161,8 @@ std::vector<CS2Entity> CS2::GetEntities(int maxPlayers) {
         e.health = health;
         e.team = team;
         e.armor = mem->ReadValue<int>(pawnAddr + pawn::m_ArmorValue, 0);
+        e.spotted = mem->ReadValue<bool>(
+            pawnAddr + pawn::m_entitySpottedState + pawn::spotted_m_bSpotted, false);
         e.name = ReadControllerName(controller);
         e.valid = true;
         out.push_back(e);
@@ -168,8 +170,7 @@ std::vector<CS2Entity> CS2::GetEntities(int maxPlayers) {
     return out;
 }
 
-bool CS2::WorldToScreen(const Vector3& world, const Matrix4& vm, Vector2 screenSize, Vector2& out) {
-    float x = vm.m[0] * world.x + vm.m[1] * world.y + vm.m[2] * world.z + vm.m[3];
+bool CS2::WorldToScreen(const Vector3& world, const Matrix4& vm, Vector2 screenSize, Vector2& out) {    float x = vm.m[0] * world.x + vm.m[1] * world.y + vm.m[2] * world.z + vm.m[3];
     float y = vm.m[4] * world.x + vm.m[5] * world.y + vm.m[6] * world.z + vm.m[7];
     float w = vm.m[12] * world.x + vm.m[13] * world.y + vm.m[14] * world.z + vm.m[15];
 
@@ -183,4 +184,58 @@ bool CS2::WorldToScreen(const Vector3& world, const Matrix4& vm, Vector2 screenS
     out.x = (screenSize.x * 0.5f) + (x * screenSize.x * 0.5f);
     out.y = (screenSize.y * 0.5f) - (y * screenSize.y * 0.5f);
     return true;
+}
+
+Vector3 CS2::GetEyePos() const {
+    if (!mem || !localPawn)
+        return {};
+    Vector3 origin = mem->ReadValue<Vector3>(localPawn + pawn::m_vOldOrigin, {});
+    Vector3 off = mem->ReadValue<Vector3>(localPawn + pawn::m_vecViewOffset, {});
+    return origin + off;
+}
+
+Vector3 CS2::GetVelocity(uintptr_t pawnAddr) const {
+    if (!mem || !pawnAddr)
+        return {};
+    return mem->ReadValue<Vector3>(pawnAddr + pawn::m_vecAbsVelocity, {});
+}
+
+bool CS2::SetVelocity(uintptr_t pawnAddr, const Vector3& v) const {
+    if (!mem || !pawnAddr)
+        return false;
+    return mem->Write<Vector3>(pawnAddr + pawn::m_vecAbsVelocity, v);
+}
+
+bool CS2::IsOnGround(uintptr_t pawnAddr) const {
+    if (!mem || !pawnAddr)
+        return false;
+    int flags = mem->ReadValue<int>(pawnAddr + pawn::m_fFlags, 0);
+    return (flags & move::FL_ONGROUND) != 0;
+}
+
+Vector3 CS2::GetPunch() const {
+    if (!mem || !localPawn)
+        return {};
+    uintptr_t cam = mem->ReadValue<uintptr_t>(localPawn + pawn::m_pCameraServices, 0);
+    if (!cam)
+        return {};
+    return mem->ReadValue<Vector3>(cam + pawn::m_vecCsViewPunch, {});
+}
+
+int CS2::GetShotsFired() const {
+    if (!mem || !localPawn)
+        return 0;
+    return mem->ReadValue<int>(localPawn + pawn::m_iShotsFired, 0);
+}
+
+bool CS2::ReadAngles(Vector3& out) const {
+    if (!mem || !clientBase)
+        return false;
+    return mem->Read(clientBase + client::dwViewAngles, out);
+}
+
+bool CS2::WriteAngles(const Vector3& ang) const {
+    if (!mem || !clientBase)
+        return false;
+    return mem->Write<Vector3>(clientBase + client::dwViewAngles, ang);
 }

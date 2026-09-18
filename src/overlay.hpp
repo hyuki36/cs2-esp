@@ -20,6 +20,7 @@ public:
     void EndFrame();
     void Destroy();
     void UpdateBounds();
+    void SetClickable(bool clickable);
 
 private:
     bool CreateDevice();

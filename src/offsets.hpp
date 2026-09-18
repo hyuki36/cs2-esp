@@ -2,9 +2,24 @@
 #include <cstdint>
 #include <cstddef>
 
-// CS2 offsets — generated 2026-09-10 via a2x/cs2-dumper
+// CS2 offsets — refreshed 2026-09-18 via a2x/cs2-dumper
 // If ESP shows nothing after a CS2 update, re-run cs2-dumper and
 // replace the client_dll values below. Schema (m_*) values change rarely.
+// NOTE: dumper no longer ships dwForceJump (subtick input) — bhop uses SendInput.
+
+// ---- movement / misc ----
+namespace move {
+    constexpr int FL_ONGROUND = (1 << 0);
+}
+
+// ---- skeleton bone ids (CS2 player model) ----
+namespace bone {
+    constexpr int HEAD = 6, NECK = 5, SPINE1 = 4, SPINE2 = 2, PELVIS = 0;
+    constexpr int ARM_UP_L = 8, ARM_LO_L = 9, HAND_L = 11;
+    constexpr int ARM_UP_R = 13, ARM_LO_R = 14, HAND_R = 16;
+    constexpr int LEG_UP_L = 22, LEG_LO_L = 23, FOOT_L = 24;
+    constexpr int LEG_UP_R = 25, LEG_LO_R = 26, FOOT_R = 27;
+}
 
 namespace Offsets {
 
@@ -34,6 +49,15 @@ namespace pawn {
     constexpr std::ptrdiff_t m_iTeamNum       = 0x3E7; // uint8 (2 = T, 3 = CT)
     constexpr std::ptrdiff_t m_vOldOrigin     = 0x13B8; // Vector (feet)
     constexpr std::ptrdiff_t m_ArmorValue     = 0x1CA4; // int32
+    constexpr std::ptrdiff_t m_fFlags         = 0x3F4;  // int32, bit0 = onground
+    constexpr std::ptrdiff_t m_vecAbsVelocity = 0x3F8;  // Vector
+    constexpr std::ptrdiff_t m_vecViewOffset  = 0xE78;  // Vector (C_BaseModelEntity)
+    constexpr std::ptrdiff_t m_pCameraServices= 0x1240; // CPlayer_CameraServices* (C_BasePlayerPawn)
+    constexpr std::ptrdiff_t m_vecCsViewPunch = 0x48;   // Vector inside camera services (recoil)
+    constexpr std::ptrdiff_t m_iShotsFired    = 0x1C8C; // int32
+    // m_entitySpottedState is an INLINE EntitySpottedState_t struct:
+    constexpr std::ptrdiff_t m_entitySpottedState = 0x1C60;
+    constexpr std::ptrdiff_t spotted_m_bSpotted   = 0x8; // bool: spotted by anyone
 }
 
 // ---- CGameSceneNode ----

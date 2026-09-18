@@ -135,6 +135,16 @@ void Overlay::EndFrame() {
     swap->Present(1, 0);
 }
 
+void Overlay::SetClickable(bool clickable) {
+    if (!hwnd) return;
+    LONG_PTR ex = GetWindowLongPtrW(hwnd, GWL_EXSTYLE);
+    if (clickable) ex &= ~WS_EX_TRANSPARENT;
+    else ex |= WS_EX_TRANSPARENT;
+    SetWindowLongPtrW(hwnd, GWL_EXSTYLE, ex);
+    SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0,
+                 SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_FRAMECHANGED | SWP_SHOWWINDOW);
+}
+
 void Overlay::Destroy() {
     ImGui_ImplDX11_Shutdown();
     ImGui_ImplWin32_Shutdown();
